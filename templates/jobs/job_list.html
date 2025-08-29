@@ -1,0 +1,168 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    <title>Job List</title>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center py-4">
+        <h4 class="mb-0">Job Listings</h4>
+        {% if request.user.is_staff %}
+        <a href="{% url 'jobs:job_create_view' %}" class="btn btn-primary">
+            <i class="bi bi-plus-lg"></i> Post New Job
+        </a>
+        {% endif %}
+    </div>
+
+    <!-- Search Section -->
+    <div class="row justify-content-center mb-4">
+        <div class="col-lg-8">
+            <form method="get" action="{% url 'jobs:job_list_view' %}">
+                <div class="input-group shadow-sm">
+                    <input type="text" name="q" class="form-control border-end-0" 
+                           placeholder="Search jobs by title, description, or location..." 
+                           value="{{ request.GET.q }}"
+                           aria-label="Search jobs">
+                    <button class="btn btn-primary" type="submit">
+                        <i class="bi bi-search"></i> Search
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="row justify-content-center">
+        <div class="col-12">
+            <!-- Jobs Grid -->
+            {% if jobs %}
+                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                    {% for job in jobs %}
+                        <div class="col">
+                            <div class="card h-100 shadow-sm position-relative">
+                                <a href="{% url 'jobs:job_detail_view' pk=job.id %}" class="text-decoration-none text-dark">
+                                    <!-- Job Header -->
+                                    <div class="card-header bg-white border-0">
+                                        <div class="d-flex align-items-center">
+                                            <div class="rounded bg-primary bg-opacity-10 text-primary d-flex align-items-center justify-content-center p-3 me-3">
+                                                <i class="bi bi-briefcase fs-4"></i>
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <h6 class="mb-1 text-truncate" style="max-width: 200px;">{{ job.job_title }}</h6>
+                                                <small class="text-muted d-flex align-items-center">
+                                                    <i class="bi bi-geo-alt me-1"></i>
+                                                    <span class="text-truncate">{{ job.location }}</span>
+                                                </small>
+                                                <small class="text-muted d-block">
+                                                    <i class="bi bi-person me-1"></i>Posted by: {{ job.user.username }}
+                                                </small>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Job Content -->
+                                    <div class="card-body">
+                                        <p class="card-text" style="height: 4.5em; overflow: hidden;">
+                                            {{ job.job_description|truncatechars:120 }}
+                                        </p>
+                                        
+                                        <!-- Job Metadata -->
+                                        <div class="d-flex flex-wrap gap-2 mt-3">
+                                            <span class="badge bg-success bg-opacity-10 text-success">
+                                                <i class="bi bi-cash me-1"></i>${{ job.min_offer }} - ${{ job.max_offer }}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Job Actions -->
+                                    <div class="card-footer bg-white border-top-0">
+                                        <div class="d-flex align-items-center justify-content-between">
+                                            <small class="text-muted">View Details</small>
+                                            <i class="bi bi-arrow-right text-primary"></i>
+                                        </div>
+                                    </div>
+                                </a>
+
+                                {% if request.user.is_staff %}
+                                    <div class="dropdown position-absolute top-0 end-0 mt-2 me-2" style="z-index: 100;">
+                                        <button class="btn btn-light btn-sm rounded-circle shadow-sm" type="button" 
+                                                data-bs-toggle="dropdown" aria-expanded="false"
+                                                onclick="event.preventDefault();">
+                                            <i class="bi bi-three-dots"></i>
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                                            <li><a class="dropdown-item d-flex align-items-center" 
+                                                   href="{% url 'jobs:job_update_view' pk=job.id %}"
+                                                   onclick="event.preventDefault(); window.location.href=this.href;">
+                                                <i class="bi bi-pencil me-2"></i> Edit
+                                            </a></li>
+                                            <li><hr class="dropdown-divider"></li>
+                                            <li><a class="dropdown-item d-flex align-items-center text-danger" 
+                                                   href="{% url 'jobs:job_delete_view' pk=job.id %}"
+                                                   onclick="event.preventDefault(); window.location.href=this.href;">
+                                                <i class="bi bi-trash me-2"></i> Delete
+                                            </a></li>
+                                        </ul>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="row justify-content-center">
+                    <div class="col-md-6">
+                        <div class="card shadow-sm">
+                            <div class="card-body text-center py-5">
+                                <i class="bi bi-briefcase display-4 text-muted mb-3 d-block"></i>
+                                <h5>No jobs available</h5>
+                                <p class="text-muted">There are no job listings at the moment.</p>
+                                {% if request.user.is_staff %}
+                                    <a href="{% url 'jobs:job_create_view' %}" class="btn btn-primary">
+                                        Post First Job
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        transition: transform 0.2s, box-shadow 0.2s;
+        border: none;
+    }
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
+    }
+    .dropdown-toggle::after {
+        display: none;
+    }
+    .badge {
+        font-weight: 500;
+        padding: 0.5em 1em;
+    }
+    .card-text {
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    .card-header {
+        background: transparent;
+    }
+    .text-truncate {
+        max-width: 150px;
+        display: inline-block;
+        vertical-align: middle;
+    }
+</style>
+{% endblock %}

@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center py-4">
+        <h4 class="mb-0">News Feed</h4>
+        <a href="{% url 'posts:post-create' %}" class="btn btn-primary">
+            <i class="bi bi-plus-lg"></i> Create Post
+        </a>
+    </div>
+
+    <!-- Main Content -->
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="container-fluid py-4">
+                <!-- Posts Feed -->
+                {% for post in object_list %}
+                    <div class="card mb-4 shadow-sm position-relative">
+                        <a href="{% url 'posts:post-detail' post.slug %}" class="text-decoration-none text-dark">
+                            <!-- Post Header -->
+                            <div class="card-header bg-white border-0 pt-3">
+                                <div class="d-flex align-items-center">
+                                    <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                                        {{ post.user.email|first|upper }}
+                                    </div>
+                                    <div>
+                                        <h6 class="mb-0">{{ post.user.email }}</h6>
+                                        <small class="text-muted">{{ post.created_at|timesince }} ago</small>
+                                    </div>
+                                    {% if request.user == post.user %}
+                                        <div class="dropdown ms-auto position-absolute end-0 top-0 mt-3 me-3" style="z-index: 100;">
+                                            <button class="btn btn-light btn-sm rounded-circle" type="button" data-bs-toggle="dropdown" onclick="event.preventDefault();">
+                                                <i class="bi bi-three-dots"></i>
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end">
+                                                <li><a class="dropdown-item" href="{% url 'posts:post-update' post.slug %}" onclick="event.preventDefault(); window.location.href=this.href;">Edit</a></li>
+                                                <li><a class="dropdown-item text-danger" href="{% url 'posts:post-delete' post.slug %}" onclick="event.preventDefault(); window.location.href=this.href;">Delete</a></li>
+                                            </ul>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <!-- Post Content -->
+                            <div class="card-body">
+                                <p class="card-text">{{ post.content }}</p>
+                                {% if post.image %}
+                                    <img src="{{ post.image.url }}" class="img-fluid rounded" alt="Post image">
+                                {% endif %}
+                            </div>
+
+                            <!-- Post Actions -->
+                            <div class="card-footer bg-white border-top-0">
+                                <div class="d-flex align-items-center text-muted">
+                                    <i class="bi bi-chat me-2"></i> View details
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                {% empty %}
+                    <div class="card shadow-sm">
+                        <div class="card-body text-center py-5">
+                            <i class="bi bi-newspaper display-4 text-muted mb-3 d-block"></i>
+                            <h5>No posts yet</h5>
+                            <p class="text-muted">Be the first to share something!</p>
+                            <a href="{% url 'posts:post-create' %}" class="btn btn-primary">Create New Post</a>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
+    }
+    .dropdown-toggle::after {
+        display: none;
+    }
+</style>
+{% endblock %}
